@@ -1,5 +1,7 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
 import personsService from './services/persons';
+import Notification from './components/Notification';
 
 const PersonForm = ({
   newName,
@@ -52,6 +54,9 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filteredText, setFilteredText] = useState();
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  // const [notificationMessage, setNotificationMessage] = useState(null);
 
   useEffect(() => {
     personsService.getAll().then(initialPersons => {
@@ -77,9 +82,12 @@ const App = () => {
     // }
 
     if (samePerson) {
-      window.confirm(
+      const ok = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
       );
+      if (!ok) {
+        return;
+      }
       const updatedPerson = { ...samePerson, number: newNumber };
 
       const updatedPersons = persons.map(person =>
@@ -88,13 +96,28 @@ const App = () => {
           : person
       );
 
-      console.log('updatedPersons ==> ', updatedPersons);
+      // console.log('updatedPersons ==> ', updatedPersons);
       personsService
         .update(updatedPerson.id, updatedPerson)
-        .then(() => setPersons(updatedPersons))
-        .catch(error =>
-          console.error('There was an error with updating the person', error)
-        );
+        .then(() => {
+          // personsService.getAll().then(updatedPersons => {
+          //   setPersons(updatedPersons);
+          // });
+          setPersons(updatedPersons);
+        })
+        .catch(error => {
+          console.error('There was an error with updating the person', error);
+          setErrorMessage(
+            `Information of ${newName} has already been removed from server`
+          );
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+          personsService.getAll().then(updatedPersons => {
+            setPersons(updatedPersons);
+          });
+          console.log('persons after error==> ', persons);
+        });
       setNewName('');
       setNewNumber('');
       return;
@@ -110,7 +133,13 @@ const App = () => {
       .create(newPerson)
       .then(returnedPerson => {
         setPersons([...persons, returnedPerson]);
+
+        setSuccessMessage(`Added ${newName}`);
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 5000);
       })
+
       .catch(error => console.error('There was an error inside App!', error));
     setNewName('');
     setNewNumber('');
@@ -150,6 +179,10 @@ const App = () => {
   return (
     <div>
       <h3>Phonebook</h3>
+      <Notification
+        successMessage={successMessage}
+        errorMessage={errorMessage}
+      />
       <Filter handleFilterName={handleFilterName} filteredText={filteredText} />
       <h3>Add a new</h3>
       <PersonForm

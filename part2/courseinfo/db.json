@@ -29,6 +29,16 @@
       "id": "c13c",
       "content": "the text is new and stores in the db.json",
       "important": true
+    },
+    {
+      "id": "e98a",
+      "content": "hello",
+      "important": false
+    },
+    {
+      "id": "1c4f",
+      "content": "not ready",
+      "important": false
     }
   ]
 }
