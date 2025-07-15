@@ -61,17 +61,41 @@ app.get('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id);
   const note = notes.find(note => note.id === id);
   if (note) {
+    console.log('Get ID json', note);
     response.json(note);
   } else {
     console.log('x');
     response.status(404).end();
   }
 });
+app.put('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id);
+  const body = request.body;
+  const note = notes.find(note => note.id === id);
+
+  const changedNote = {
+    content: body.content,
+    important: body.important,
+    id: id,
+  };
+
+  // const noteIndex = notes.findIndex(n => n.id === id);
+
+  // if (noteIndex !== -1) {
+  if (note) {
+    notes = notes.map(note => (note.id === id ? changedNote : note));
+
+    response.json(changedNote);
+  } else {
+    console.log("error: 'put method, note id:'", id, 'not found');
+    response.status(404).json({ error: 'Note not found' });
+  }
+});
 
 app.delete('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id);
   notes = notes.filter(note => note.id !== id);
-
+  console.log('delete ID', note);
   response.status(204).end();
 });
 
