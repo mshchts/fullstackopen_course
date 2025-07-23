@@ -12,7 +12,7 @@ node_modules
 dist-ssr
 *.local
 courseinfo
-phonebook_backend
+# phonebook_backend
 phonebook_frontend
 notes_backend/dist - Copy
 notes_backend/old_dist
