@@ -16,6 +16,7 @@ courseinfo
 phonebook_frontend
 notes_backend/dist - Copy
 notes_backend/old_dist
+notes_frontend
 
 # Editor directories and files
 .vscode/*
