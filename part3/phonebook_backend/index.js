@@ -1,7 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
-const cors = require('cors');
+// const cors = require('cors');
 
 let persons = [
   {
@@ -26,7 +26,8 @@ let persons = [
   },
 ];
 
-app.use(cors());
+// app.use(cors());
+app.use(express.static('dist'));
 app.use(express.json());
 
 morgan.token('body', (req, res) => {
@@ -56,6 +57,7 @@ app.use(
 app.get('/', (req, res) => {
   res.send(`<p>Phonebook app</p>`);
 });
+
 app.get('/info', (req, res) => {
   const date = new Date();
   //   const year = date.getFullYear();
@@ -71,10 +73,10 @@ app.get('/api/persons', (req, res) => {
 });
 
 const generateId = () => {
-  const randomN = Math.floor(Math.random() * 1000).toString();
-  return randomN;
-  //   const maxId = persons.lenth > 0 ? Math.max(...persons.map(n => n.id)) : 0;
-  //   return maxId + 1;
+  // const randomN = Math.floor(Math.random() * 1000).toString();
+  // return randomN;
+  const maxId = persons.length > 0 ? Math.max(...persons.map(n => Number(n.id))) : 0;
+  return (maxId + 1).toString();
 };
 
 app.get('/api/persons/:id', (req, res) => {
@@ -92,10 +94,12 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons', (req, res) => {
   const body = req.body;
+  //   console.log('body ==> ', body);
 
   const isDuplicate = persons.some(person => person.name === body.name);
-  console.log('isDuplicate ==> ', isDuplicate);
-  //   console.log('body ==> ', body);
+    if (isDuplicate) {
+    return res.status(400).json({ error: 'name must be unique' });
+  }
 
   if (!body.name || !body.number) {
     return res.status(400).json({ error: 'content missing' });
@@ -108,37 +112,37 @@ app.post('/api/persons', (req, res) => {
     name: body.name,
     number: body.number,
   };
-  let newPersons = persons.concat(person);
-  console.log('newPersons', newPersons);
+  persons = persons.concat(person);
+  console.log('newPersons', persons);
   //   persons = [...persons, person];
 
-  res.json(newPersons);
+  res.json(person);
 });
 
 app.delete('/api/persons/:id', (req, res) => {
   const id = req.params.id;
   persons = persons.filter(person => person.id !== id);
-  console.log('persons deleted', persons);
   res.status(204).end();
 });
 
 app.put('/api/npersons/:id', (request, response) => {
-  const id = Number(request.params.id);
+  // const id = Number(request.params.id);
+  const id = request.params.id;
   const body = request.body;
-  const person = persons.find(note => note.id === id);
 
+  const person = persons.find(p => p.id === id);
   console.log('put person', person);
+
   const changedPerson = {
-    name: body.content,
+    name: body.name,
     number: body.number,
     id: id,
   };
 
   if (person) {
     persons = persons.map(person =>
-      perosn.id === id ? changedPerson : person
+      person.id === id ? changedPerson : person
     );
-
     response.json(changedPerson);
   } else {
     console.log("error: 'put method, person id:'", id, 'not found');
