@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
     "start": "node index.js",
+    "start:debug": "node --inspect-brk index.js",
     "build:ui": "rm -rf dist && cd ../notes_frontend && npm run build && cp -r dist ../notes_backend",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
@@ -14,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "mongoose": "^8.18.1",
     "morgan": "^1.10.1"
   },
   "devDependencies": {
