@@ -21,7 +21,7 @@ const personSchema = new mongoose.Schema({
 
 const Person = mongoose.model('Person', personSchema)
 
-if(process.argv.length > 3 && process.argv.length < 6){
+if(process.argv.length === 5){
     const person = new Person({
       name: process.argv[3],
       number: process.argv[4],
@@ -39,8 +39,7 @@ if(process.argv.length > 3 && process.argv.length < 6){
       })
       mongoose.connection.close()
     })
-} else if(process.argv.length > 5) {
-    console.log('Too many arguments');
-    mongoose.connection.close()
-    // process.exit(1);
+} else {
+    console.log('Provide correct number of arguments: password, name and number.');
+    mongoose.connection.close();
 }
