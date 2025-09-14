@@ -16,6 +16,7 @@ mongoose.connect(url)
 
 const noteSchema = new mongoose.Schema({
   content: String,
+  date: String,
   important: Boolean,
 })
 
@@ -26,23 +27,18 @@ const Note = mongoose.model('Note', noteSchema)
 //   important: true,
 // })
 
-Note.find({}).then(result => {
-  result.forEach(note => {
-    console.log(note)
-  })
-  mongoose.connection.close()
-})
-
-if(process.argv.length > 3 && process.argv.length < 6){
+if(process.argv.length === 5){
     const note = new Note({
-      name: process.argv[3],
-      number: process.argv[4],
+      content: process.argv[3],
+      date: new Date(),
+      important: process.argv[4] === 'true',
     })
     note.save().then(result => {
       console.log(`added ${note.content} ${note.important}`)
       mongoose.connection.close()
     })
-} else if(process.argv.length === 3) {
+} 
+else if(process.argv.length === 3) {
     Note.find({ important: true })
     .then(result => {
         console.log(`notes:`)
@@ -51,8 +47,7 @@ if(process.argv.length > 3 && process.argv.length < 6){
       })
       mongoose.connection.close()
     })
-} else if(process.argv.length > 5) {
-    console.log('Too many arguments');
-    mongoose.connection.close()
-    // process.exit(1);
+} else {
+    console.log('Provide correct number of arguments: password, note content and importance.');
+    mongoose.connection.close();
 }

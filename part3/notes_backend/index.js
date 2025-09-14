@@ -1,7 +1,13 @@
-const express = require('express');
+require('dotenv').config()
+const express = require('express')
+const Note = require('./models/note')
 var morgan = require('morgan');
+
 const app = express();
 // const cors = require('cors');
+
+// const password = process.argv[2]
+// const url = `mongodb+srv://fullstack:${password}@cluster0.m3vemba.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`
 
 let notes = [
   {
@@ -41,7 +47,9 @@ app.get('/', (request, response) => {
 });
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes);
+    Note.find({}).then(notes => {
+    response.json(notes)
+  })
 });
 
 const generateId = () => {
@@ -58,28 +66,24 @@ app.post('/api/notes', (request, response) => {
     });
   }
 
-  const note = {
+  const note = new Note({
     content: body.content,
     important: body.important || false,
-    id: generateId(),
-  };
+    // id: generateId(),
+  });
 
-  notes = notes.concat(note);
-
-  response.json(note);
+  // notes = notes.concat(note);
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 });
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find(note => note.id === id);
-  if (note) {
-    console.log('Get ID json', note);
-    response.json(note);
-  } else {
-    console.log('x');
-    response.status(404).end();
-  }
+  Note.findById(request.params.id).then(note => {
+    response.json(note)
+  })
 });
+
 app.put('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id);
   const body = request.body;
@@ -117,7 +121,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
