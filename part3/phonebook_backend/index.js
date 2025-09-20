@@ -65,8 +65,10 @@ app.get('/info', (req, res) => {
   //   const year = date.getFullYear();
   //   const month = date.getMonth() + 1;
   //   const day = date.getDate();
-  res.send(`<p>Phonebook has info for ${persons.length} people. <br>
-          ${date}</p>`);
+  Person.find({}).then(persons => {
+    res.send(`<p>Phonebook has info for ${persons.length} people. <br>
+            ${date}</p>`);
+    })
   // ${day}.${month}.${year}</p>`);
 });
 
@@ -76,32 +78,28 @@ app.get('/api/persons', (req, res) => {
     })
 });
 
-const generateId = () => {
-  // const randomN = Math.floor(Math.random() * 1000).toString();
-  // return randomN;
-  const maxId = persons.length > 0 ? Math.max(...persons.map(n => Number(n.id))) : 0;
-  return (maxId + 1).toString();
-};
+// const generateId = () => {
+  // // const randomN = Math.floor(Math.random() * 1000).toString();
+  // // return randomN;
+//   const maxId = persons.length > 0 ? Math.max(...persons.map(n => Number(n.id))) : 0;
+//   return (maxId + 1).toString();
+// };
 
-app.get('/api/persons/:id', (req, res) => {
-  console.log(req.params.id, 'req.params.id');
-  //   const id = Number(req.params.id); if ID is a number;  // old
-  // const id = req.params.id;
-  // const person = persons.find(person => person.id === id);
-  // if (person) {
-  //   res.json(person);
-  // } else {
-  //   console.log('no such person');
-  //   res.status(404).end();
-  // }
-    Person.findById(req.params.id).then(person => {
-      res.json(person)
+app.get('/api/persons/:id', (req, res, next) => {
+    Person.findById(req.params.id)
+    .then(person => {
+      if(person){
+        res.json(person);
+      } else {
+          console.log('no such person (or ID)');
+        express.response.status(404).end();
+      }
     })
+    .catch(error => next(error));
 });
 
 app.post('/api/persons', (req, res) => {
   const body = req.body;
-  //   console.log('body ==> ', body);
 
   const isDuplicate = persons.some(person => person.name === body.name);
     if (isDuplicate) {
@@ -119,9 +117,9 @@ app.post('/api/persons', (req, res) => {
     name: body.name,
     number: body.number,
   });
-  persons = persons.concat(person);
-  console.log('newPersons', persons);
-  //   persons = [...persons, person];
+  // persons = persons.concat(person);
+  // console.log('newPersons', persons);
+  // //   persons = [...persons, person];
   
   person.save().then(person => {
     console.log(`added ${person.name} number ${person.number} to phonebook by POST method`)
@@ -129,42 +127,69 @@ app.post('/api/persons', (req, res) => {
   })
 });
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  persons = persons.filter(person => person.id !== id);
-  res.status(204).end();
+app.put('/api/persons/:id', (request, response) => {
+  const { name, number} = request.body;
+
+Person.findById(request.params.id)
+  .then(person => {
+      if (!person) {
+        return response.status(404).end()
+      }
+
+      person.name = name;
+      person.number = number;
+
+      return person.save().then((updatedPerson) => {
+        response.json(updatedPerson)
+      })
+  })
+  .catch(error => next(error))
+
+  // const id = request.params.id;
+  // const body = request.body;
+  // const person = persons.find(p => p.id === id);
+
+  // const changedPerson = {
+  //   name: body.name,
+  //   number: body.number,
+  //   id: id,
+  // };
+
+  // if (person) {
+  //   persons = persons.map(person =>
+  //     person.id === id ? changedPerson : person
+  //   );
+  //   response.json(changedPerson);
+  // } else {
+  //   console.log("error: 'put method, person id:'", id, 'not found');
+  //   response.status(404).json({ error: 'Person not found' });
+  // }
 });
 
-app.put('/api/npersons/:id', (request, response) => {
-  // const id = Number(request.params.id);
-  const id = request.params.id;
-  const body = request.body;
-
-  const person = persons.find(p => p.id === id);
-  console.log('put person', person);
-
-  const changedPerson = {
-    name: body.name,
-    number: body.number,
-    id: id,
-  };
-
-  if (person) {
-    persons = persons.map(person =>
-      person.id === id ? changedPerson : person
-    );
-    response.json(changedPerson);
-  } else {
-    console.log("error: 'put method, person id:'", id, 'not found');
-    response.status(404).json({ error: 'Person not found' });
-  }
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndDelete(req.params.id)
+  .then(result => {
+    res.status(204).end();
+  })
+  .catch(error => next(error))
+  // persons = persons.filter(person => person.id !== id);
 });
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' });
 };
-
+// handler of requests with unknown endpoint
 app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)  
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+}
+// handler of requests with result to errors
+app.use(errorHandler)
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
