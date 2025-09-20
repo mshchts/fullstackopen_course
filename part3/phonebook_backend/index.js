@@ -78,13 +78,6 @@ app.get('/api/persons', (req, res) => {
     })
 });
 
-// const generateId = () => {
-  // // const randomN = Math.floor(Math.random() * 1000).toString();
-  // // return randomN;
-//   const maxId = persons.length > 0 ? Math.max(...persons.map(n => Number(n.id))) : 0;
-//   return (maxId + 1).toString();
-// };
-
 app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id)
     .then(person => {
@@ -98,7 +91,7 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error));
 });
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body;
 
   const isDuplicate = persons.some(person => person.name === body.name);
@@ -113,7 +106,6 @@ app.post('/api/persons', (req, res) => {
   }
 
   const person = new Person({
-    // id: generateId(),
     name: body.name,
     number: body.number,
   });
@@ -125,23 +117,29 @@ app.post('/api/persons', (req, res) => {
     console.log(`added ${person.name} number ${person.number} to phonebook by POST method`)
     res.json(person);
   })
+  .catch(error => next(error));
 });
 
-app.put('/api/persons/:id', (request, response) => {
+// Next step, change mongoose validators of update operations
+app.put('/api/persons/:id', (request, response, next) => {
   const { name, number} = request.body;
 
-Person.findById(request.params.id)
-  .then(person => {
-      if (!person) {
-        return response.status(404).end()
-      }
+    const person = {
+    name: name,
+    number: number,
+  };
 
-      person.name = name;
-      person.number = number;
+  Person.findByIdAndUpdate(
+    request.params.id,
+    person,
+    {new: true, runValidators: true, context: 'query'}
+  )
+  .then(updatedPerson  => {
+    if (!updatedPerson ) {
+      return response.status(404).end()
+    }
 
-      return person.save().then((updatedPerson) => {
-        response.json(updatedPerson)
-      })
+    response.json(updatedPerson)
   })
   .catch(error => next(error))
 
@@ -185,7 +183,10 @@ const errorHandler = (error, request, response, next) => {
   console.error(error.message)  
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message})
+  }
+
   next(error)
 }
 // handler of requests with result to errors
