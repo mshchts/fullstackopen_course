@@ -1,3 +1,5 @@
+const { getMaxListeners } = require("../app");
+
 const dummy = (blogs) => {
   return 1;
 }
@@ -14,7 +16,20 @@ const totalLikes = (blogs) => {
   }
 } 
 
+const favoriteBlog = (blogs) => {
+  if (blogs.length === 0){
+    return null
+  }
+  // const mostLikedBlog = Math.max(...blogs.map(blog => blog.likes));
+  console.log('Initial max value:', blogs[0])
+  
+  return blogs.reduce((max, blog) => (
+    blog.likes > max.likes ? blog : max
+  ), blogs[0])
+}
+
 module.exports = {
   dummy,
-  totalLikes 
+  totalLikes,
+  favoriteBlog
 }

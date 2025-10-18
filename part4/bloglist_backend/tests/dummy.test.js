@@ -52,3 +52,55 @@ describe('total likes', () => {
     assert.strictEqual(result, 9)
   })
 })
+
+describe('blog with the most likes', () => {
+       const listWithBlogs = [
+    {
+      _id: '5a422aa71b54a676234d17f8',
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
+      likes: 5,
+      __v: 0
+    },
+    {
+      _id: '5a422aa71b54a676234d17f3',
+      title: 'The Black Cat',
+      author: 'Edgar Allan Poe',
+      url: '2https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
+      likes: 4,
+      __v: 0
+    },
+    {
+      _id: '5a422aa71b54a676234d17f3',
+      title: 'Pet Sematary',
+      author: 'Stephen King',
+      url: 'https://en.wikipedia.org/wiki/Pet_Sematary',
+      likes: 7,
+      __v: 0
+    },
+    {
+      _id: '5a422aa71b54a676234d17f3',
+      title: 'Call of Cthulhu',
+      author: 'HP Lovecraft',
+      url: 'https://en.wikipedia.org/wiki/Pet_Sematary',
+      likes: 9,
+      __v: 0
+    },
+    {
+      _id: '5a422aa71b54a676234d17f3',
+      title: 'The Fair of Darkness',
+      author: 'Ray Bradbury',
+      url: 'https://en.wikipedia.org/wiki/Pet_Sematary',
+      likes: 7,
+      __v: 0
+    }
+  ]
+
+    test('which blog has the most likes', () => {
+    const result = listHelper.favoriteBlog(listWithBlogs)
+    console.log('dummy.test Actual Result:', result)
+    assert.deepStrictEqual(result, listWithBlogs[3])
+  })
+
+})
