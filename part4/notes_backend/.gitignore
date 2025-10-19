@@ -1,0 +1,7 @@
+node_modules
+dist - Copy
+old_dist
+.env
+
+# Editor directories and files
+.vscode/*

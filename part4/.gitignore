@@ -14,7 +14,7 @@ dist
 dist - Copy
 dist-ssr
 src - Copy
-notes_backend
+# notes_backend
 notes_frontend
 bloglist_backend/requests
 
